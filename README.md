@@ -14,12 +14,11 @@ Create a map as on the front page of http://www.internationalgenome.org/ in a re
 
 ## Result
 
-![Version on internationalgenome.org](1000genomes-map.png)
 ![New version](1000genomes-map-remake.png)
 
-Some deviation, see below. 
+Some deviation, see comment below. 
 
-## Difficulty
+### Reason for deviation from the original
 
 There are many populations for which the current location is the same as the ancestry (to a certain extent of course), e.g. TSI (Toscani in Italy). But others, such as ITU (Indian Telugu from the UK) are living in the UK and have a language in common (not necessarily a geographical location). 
 Hence I mapped the populations according to the current location, but coloured them according to ancestry. 
