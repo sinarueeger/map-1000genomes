@@ -78,7 +78,7 @@ world <- ggplot() +
 world +
   geom_jitter(aes(x = lon, y = lat,
                   color = SPOP),   ## size = n, size is the ares
-             data = n.1kg, alpha = .5, size = 2) +
+             data = n.1kg, alpha = .9, size = 4) +
   scale_size_area() +
   #labs(size = '#n (Area of point)') +
   labs(title = "1000 Genomes reference panel populations", caption = glue::glue("Source: {url} \n {url.spop} (manual tidying)"))
