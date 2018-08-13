@@ -75,11 +75,15 @@ world <- ggplot() +
 
 ## now we add the points
 ## and we jitter the points, cause some are at the same location (e.g. ITU, STU in United Kingdom)
-world +
+map.1kg <- world +
   geom_jitter(aes(x = lon, y = lat,
                   color = SPOP),   ## size = n, size is the ares
              data = n.1kg, alpha = .9, size = 4) +
   scale_size_area() +
   #labs(size = '#n (Area of point)') +
   labs(title = "1000 Genomes reference panel populations", caption = glue::glue("Source: {url} \n {url.spop} (manual tidying)"))
+map.1kg
 
+png("1000genomes-map-remake.png", res = 300, height = 1700, width = 3000)
+print(map.1kg)
+dev.off()
