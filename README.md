@@ -9,8 +9,8 @@ Create a map as on the front page of http://www.internationalgenome.org/ in a re
 ![Version on internationalgenome.org](1000genomes-map.png)
 
 ## Data
-- The population counts and labels are from here: ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/working/20130606_sample_info/20130606_sample_info.xlsx
-- The super population labels are from here: http://www.internationalgenome.org/faq/which-populations-are-part-your-study/ (pasted into a csv, then location was inferred)
+- The population counts and labels are from [here](ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/working/20130606_sample_info/20130606_sample_info.xlsx)
+- The super population labels are from [here](http://www.internationalgenome.org/faq/which-populations-are-part-your-study/) (pasted into a csv, then location was inferred)
 
 ## Result
 
