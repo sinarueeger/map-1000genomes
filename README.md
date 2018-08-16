@@ -14,7 +14,7 @@ Create a map as on the front page of http://www.internationalgenome.org/ in a re
 
 ## Result
 
-HTML version [here](https://htmlpreview.github.io/?https://github.com/sinarueeger/map-1000genomes/blob/master/map-1000genomes-populations.html).
+HTML version [here](https://github.com/sinarueeger/map-1000genomes/blob/master/map-1000genomes-populations.html).
 
 ![New version](map-1000genomes-populations.png)
 
