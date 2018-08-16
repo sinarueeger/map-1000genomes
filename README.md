@@ -14,7 +14,7 @@ Create a map as on the front page of http://www.internationalgenome.org/ in a re
 
 ## Result
 
-![New version](1000genomes-map-remake.png)
+![New version](map-1000genomes-populations.png)
 
 Some deviation, see comment below. 
 
