@@ -14,6 +14,7 @@ library(readxl)
 
 ## download file first
 url <- "ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/working/20130606_sample_info/20130606_sample_info.xlsx"
+url.bitly <- "http://bit.ly/2MQTr02"
 download.file(url, "20130606_sample_info.xlsx", mode="wb")
 
 ## import file
@@ -65,28 +66,30 @@ n.1kg <- n.1kg.withloc
 
 ## glue POP and `Population Description`
 #n.1kg <- n.1kg %>% mutate(pop.desc = paste(sep = "<br/>", POP, `Population Description`))
-n.1kg <- n.1kg %>% mutate(pop.desc = paste(sep = " : ", POP, `Population Description`))
+n.1kg <- n.1kg %>% mutate(pop.desc = paste0(POP, " : ", `Population Description`, " (", SPOP, ")"))
 
 ## map onto a world map
 ## with leaflet
 ## ---------------------
 library(leaflet) 
 
-## spec icons according to SPOP
-cols <- brewer.pal(n = 5, "Dark2")
 
-
-
-
+## spec icons
 icons <- awesomeIcons(
-  icon = '',
+  icon = 'user', #people',
   iconColor = 'black',
-  library = 'fa',
+  library = 'fa', #ion
   markerColor = as.character(forcats::fct_recode(as.factor(n.1kg$SPOP), red = "EUR", blue = "AFR", green = "AMR", gray = "EAS", orange = "SAS")) ## ok, thats ugly, but who cares! turns out, hex colors won't work
 )
-cols <- c("red", "blue", "green", "gray", "orange")
+cols <- c("#E50102", "#00A9DD", "#57BA1F", "#575757", "#FD8E00")
 SPOP <- c("EUR",  "AFR", "AMR", "EAS", "SAS")
 
+icon.info <- awesomeIcons(
+  icon = 'info', #people',
+  iconColor = 'white',
+  library = 'fa', #ion
+  markerColor = "white"
+)
 ## from here: https://github.com/bhaskarvk/leaflet/blob/master/inst/examples/awesomeMarkers.R
 #icon.bike.blue <- makeAwesomeIcon(icon = 'bicycle', markerColor = 'blue', library='fa',
 #                                  iconColor = 'white')
@@ -96,11 +99,13 @@ SPOP <- c("EUR",  "AFR", "AMR", "EAS", "SAS")
 ## make map
 m <- leaflet(data = n.1kg) %>%
   addTiles() %>%  # Add default OpenStreetMap map tiles
-  addAwesomeMarkers(lat=~lat, lng=~lon, label = ~htmltools::htmlEscape(pop.desc), icon = icons) %>% addLegend("bottomright", 
+  addAwesomeMarkers(lat=~lat, lng=~lon, label = ~htmltools::htmlEscape(pop.desc), icon = icons) %>% 
+  addAwesomeMarkers(lat=-45, lng=-107, popup = glue::glue("Source: {url.bitly} + {url.spop} (manual tidying)"), icon = icon.info) %>% 
+  addLegend("bottomright", 
   colors =cols,
 labels= SPOP,
 opacity = 1)
-
+  
 #, popup = ~POP, icon = icons) #%>% 
   # Base groups
 #  addProviderTiles(providers$MtbMap, group = "MTBmap") %>%
@@ -108,12 +113,14 @@ opacity = 1)
 
 m  # Print the map
 
+## save to png
+mapview::mapshot(m, file = "map-1000genomes-populations.png")
+
+
 ## to hmtl
 library(htmlwidgets)
 saveWidget(m, file="map-1000genomes-populations.html")
 
-## save to png
-mapview::mapshot(m, file = "map-1000genomes-populations.png")
 
 #  labs(title = "1000 Genomes reference panel populations", caption = glue::glue("Source: {url} \n {url.spop} (manual tidying)"))
 #map.1kg
