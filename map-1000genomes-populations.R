@@ -63,27 +63,57 @@ while(nrow(n.1kg.withloc) != nrow(n.1kg))
 
 n.1kg <- n.1kg.withloc
 
+## glue POP and `Population Description`
+#n.1kg <- n.1kg %>% mutate(pop.desc = paste(sep = "<br/>", POP, `Population Description`))
+n.1kg <- n.1kg %>% mutate(pop.desc = paste(sep = " : ", POP, `Population Description`))
+
 ## map onto a world map
+## with leaflet
 ## ---------------------
-library(ggplot2)
-theme_set(theme_void()) ## removes all axes and default labels
-library(maps) ## for googlemaps
+library(leaflet) 
 
-## this gives us the world map
-world <- ggplot() +
-  borders("world", colour = "gray85", fill = "gray80")
+## spec icons according to SPOP
+cols <- brewer.pal(n = 5, "Dark2")
 
-## now we add the points
-## and we jitter the points, cause some are at the same location (e.g. ITU, STU in United Kingdom)
-map.1kg <- world +
-  geom_jitter(aes(x = lon, y = lat,
-                  color = SPOP),   ## size = n, size is the ares
-             data = n.1kg, alpha = .9, size = 3.5) +
-  scale_size_area() +
-  #labs(size = '#n (Area of point)') +
-  labs(title = "1000 Genomes reference panel populations", caption = glue::glue("Source: {url} \n {url.spop} (manual tidying)"))
-map.1kg
 
-png("1000genomes-map-remake.png", res = 100, height = 505, width = 1025)
-print(map.1kg)
-dev.off()
+
+
+icons <- awesomeIcons(
+  icon = '',
+  iconColor = 'black',
+  library = 'fa',
+  markerColor = as.character(forcats::fct_recode(as.factor(n.1kg$SPOP), red = "EUR", blue = "AFR", green = "AMR", gray = "EAS", orange = "SAS")) ## ok, thats ugly, but who cares! turns out, hex colors won't work
+)
+cols <- c("red", "blue", "green", "gray", "orange")
+SPOP <- c("EUR",  "AFR", "AMR", "EAS", "SAS")
+
+## from here: https://github.com/bhaskarvk/leaflet/blob/master/inst/examples/awesomeMarkers.R
+#icon.bike.blue <- makeAwesomeIcon(icon = 'bicycle', markerColor = 'blue', library='fa',
+#                                  iconColor = 'white')
+#icon.bike.green <- makeAwesomeIcon(icon = 'bicycle', markerColor = 'green', library='fa',
+#                                   iconColor = 'white')
+
+## make map
+m <- leaflet(data = n.1kg) %>%
+  addTiles() %>%  # Add default OpenStreetMap map tiles
+  addAwesomeMarkers(lat=~lat, lng=~lon, label = ~htmltools::htmlEscape(pop.desc), icon = icons) %>% addLegend("bottomright", 
+  colors =cols,
+labels= SPOP,
+opacity = 1)
+
+#, popup = ~POP, icon = icons) #%>% 
+  # Base groups
+#  addProviderTiles(providers$MtbMap, group = "MTBmap") %>%
+  # Layers control
+
+m  # Print the map
+
+## to hmtl
+library(htmlwidgets)
+saveWidget(m, file="map-1000genomes-populations.html")
+
+## save to png
+mapview::mapshot(m, file = "map-1000genomes-populations.png")
+
+#  labs(title = "1000 Genomes reference panel populations", caption = glue::glue("Source: {url} \n {url.spop} (manual tidying)"))
+#map.1kg
