@@ -100,7 +100,8 @@ icon.info <- awesomeIcons(
 m <- leaflet(data = n.1kg) %>%
   addTiles() %>%  # Add default OpenStreetMap map tiles
   addAwesomeMarkers(lat=~lat, lng=~lon, label = ~htmltools::htmlEscape(pop.desc), icon = icons) %>% 
-  addAwesomeMarkers(lat=-45, lng=-107, popup = glue::glue("Source: {url.bitly} + {url.spop} (manual tidying)"), icon = icon.info) %>% 
+  addAwesomeMarkers(lat=-45, lng=-107, popup = glue::glue("Source: https://github.com/sinarueeger/map-1000genomes/"), icon = icon.info) %>% 
+  #glue::glue("Source: {url.bitly} + {url.spop} (manual tidying)"), icon = icon.info) %>% 
   addLegend("bottomright", 
   colors =cols,
 labels= SPOP,
