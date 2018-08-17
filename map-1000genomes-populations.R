@@ -1,11 +1,14 @@
 ## -----------------------------------
-## map reference panels on world map
+## map reference panel locations onto a world map
 ## -----------------------------------
+
+## why? cause the one on their webpage: http://www.internationalgenome.org/ is not terrific
 
 ## how to make such a map
 ## ------------------------
 ## parts of this code is from here:
 ## https://github.com/rladies/Map-RLadies-Growing
+## but instead of making a ggplot map, we make a leaflet
 
 ## data
 ## --------
@@ -20,18 +23,19 @@ download.file(url, "20130606_sample_info.xlsx", mode="wb")
 ## import file
 df <- read_excel("20130606_sample_info.xlsx", sheet="Sample Info")
 #  >> Sample Info
-## count number of samples by population
-## call population POP
+## count number of individuals by population
+## rename population > POP
 n.pop <- df %>% group_by(Population) %>% summarise(n = n()) %>% rename(POP = Population)
 
-## add super populations
+## import super population names and details to location of populations
 ## copied from here: 
 url.spop <- "http://www.internationalgenome.org/faq/which-populations-are-part-your-study/"
-## added location manually (!)
-## call super population SPOP
+## added location manually (!) - found this the only option to prevent overlapping locations. Also, description involves a mix of location and origin.
+
+## rename superpopulation > SPOP
 n.spop <- read_csv("sample_info_superpop.csv") %>% rename(POP = `Population Code`, SPOP = `Super Population Code`)
 
-## join the two sample information
+## join the two information
 n.1kg <- left_join(n.pop, n.spop, by = c("POP" = "POP"))
 
 
@@ -73,55 +77,42 @@ n.1kg <- n.1kg %>% mutate(pop.desc = paste0(POP, " : ", `Population Description`
 ## ---------------------
 library(leaflet) 
 
-
-## spec icons
+## define icons
 icons <- awesomeIcons(
   icon = 'user', #people',
   iconColor = 'black',
   library = 'fa', #ion
   markerColor = as.character(forcats::fct_recode(as.factor(n.1kg$SPOP), red = "EUR", blue = "AFR", green = "AMR", gray = "EAS", orange = "SAS")) ## ok, thats ugly, but who cares! turns out, hex colors won't work
 )
+
+## now it gets even uglier, cause we need to create a vector that maps cols to SPOP from the markerColor argument above
 cols <- c("#E50102", "#00A9DD", "#57BA1F", "#575757", "#FD8E00")
 SPOP <- c("EUR",  "AFR", "AMR", "EAS", "SAS")
 
+## separate icon that will display the information
 icon.info <- awesomeIcons(
   icon = 'info', #people',
   iconColor = 'white',
   library = 'fa', #ion
   markerColor = "white"
 )
-## from here: https://github.com/bhaskarvk/leaflet/blob/master/inst/examples/awesomeMarkers.R
-#icon.bike.blue <- makeAwesomeIcon(icon = 'bicycle', markerColor = 'blue', library='fa',
-#                                  iconColor = 'white')
-#icon.bike.green <- makeAwesomeIcon(icon = 'bicycle', markerColor = 'green', library='fa',
-#                                   iconColor = 'white')
 
 ## make map
 m <- leaflet(data = n.1kg) %>%
   addTiles() %>%  # Add default OpenStreetMap map tiles
   addAwesomeMarkers(lat=~lat, lng=~lon, label = ~htmltools::htmlEscape(pop.desc), icon = icons) %>% 
-  addAwesomeMarkers(lat=-45, lng=-107, popup = glue::glue("Source: https://github.com/sinarueeger/map-1000genomes/"), icon = icon.info) %>% 
+  addAwesomeMarkers(lat=-45, lng=-107, popup = glue::glue("Source: https://github.com/sinarueeger/map-1000genomes/"), icon = icon.info) %>% ## this bit has potential to be displayed as a href. 
   #glue::glue("Source: {url.bitly} + {url.spop} (manual tidying)"), icon = icon.info) %>% 
   addLegend("bottomright", 
   colors =cols,
 labels= SPOP,
 opacity = 1)
   
-#, popup = ~POP, icon = icons) #%>% 
-  # Base groups
-#  addProviderTiles(providers$MtbMap, group = "MTBmap") %>%
-  # Layers control
-
 m  # Print the map
 
 ## save to png
 mapview::mapshot(m, file = "map-1000genomes-populations.png")
 
-
-## to hmtl
+## save to hmtl
 library(htmlwidgets)
 saveWidget(m, file="map-1000genomes-populations.html")
-
-
-#  labs(title = "1000 Genomes reference panel populations", caption = glue::glue("Source: {url} \n {url.spop} (manual tidying)"))
-#map.1kg
