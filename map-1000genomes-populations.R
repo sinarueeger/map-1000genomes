@@ -28,7 +28,7 @@
 
 library(leaflet) 
 library(dplyr) 
-library(ggmap) ## for geocode, devtools::install_github("dkahle/ggmap")
+library(tmaptools) ## for geocode, devtools::install_github("dkahle/ggmap")
 
 
 # ggmap requires a google map api key
@@ -77,31 +77,31 @@ n.1kg <- left_join(n.pop, n.spop, by = c("POP" = "POP"))
 ## a workaround is to set source = "dsk" (works for a limited number of queries): 
 ## see https://stackoverflow.com/questions/36175529/getting-over-query-limit-after-one-request-with-geocode
 
-n.1kg <- n.1kg %>% mutate(purrr::map(.$location, ggmap::geocode)) %>% tidyr::unnest()
+coor.1kg <- n.1kg %>% slice(1:3) %>% mutate(coor_ = purrr::map(.$location, function(x) tmaptools::geocode_OSM(x)$coords)) %>% tidyr::unnest_wider(coor_)
 
 ## running into the inevitable QUERY LIMITS problems, lets use the approach from https://github.com/rladies/Map-RLadies-Growing
-n.1kg.withloc <- n.1kg %>% 
+coor.1kg.withloc <- coor.1kg %>% 
   filter(!is.na(lon))
 
-while(nrow(n.1kg.withloc) != nrow(n.1kg))
+while(nrow(coor.1kg.withloc) != nrow(coor.1kg))
 {
   #   repeat this until there are no warnings() about QUERY LIMITS
-  temp <- n.1kg %>% 
+  temp <- coor.1kg %>% 
     select(-lon, -lat) %>% 
-    anti_join(n.1kg.withloc %>% select(-lon, -lat)) %>% 
+    anti_join(coor.1kg.withloc %>% select(-lon, -lat)) %>% 
     mutate(longlat = purrr::map(.$location, geocode, source = "dsk")) %>% 
     tidyr::unnest() %>% 
     filter(!is.na(lon))
   
-  n.1kg.withloc <- n.1kg.withloc %>% 
+  coor.1kg.withloc <- coor.1kg.withloc %>% 
     bind_rows(temp) %>% 
     distinct()
 }
 
-n.1kg <- n.1kg.withloc
+coor.1kg <- coor.1kg.withloc
 
 ## glue POP and `Population Description` together
-n.1kg <- n.1kg %>% mutate(pop.desc = paste0(POP, " : ", `Population Description`, " (", SPOP, ")"))
+coor.1kg <- coor.1kg %>% mutate(pop.desc = paste0(POP, " : ", `Population Description`, " (", SPOP, ")"))
 
 ## given that only a number of geolocation are possible with the google API, this 
 ## should probably stored out
