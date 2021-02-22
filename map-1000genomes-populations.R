@@ -82,10 +82,11 @@ coor.1kg <- n.1kg %>% mutate(coor_ = purrr::map(.$location, function(x) tmaptool
 
 
 ## living in: append ", living in" string
-coor.1kg[!is.na(coor.1kg$living_in),"living_in"] <- sapply(coor.1kg[!is.na(coor.1kg$living_in),"living_in"], function(x) paste(", living in", x ))
+#coor.1kg[!is.na(coor.1kg$living_in),"living_in"] <- sapply(coor.1kg[!is.na(coor.1kg$living_in),"living_in"], function(x) paste(", living in", x ))
+#coor.1kg$living_in[is.na(coor.1kg$living_in)] <- ""
 
 ## glue POP and `Population Description` together
-coor.1kg <- coor.1kg %>% mutate(pop.desc = paste0(POP, " : ", `Population Description`, " (", SPOP, living_in, ")"))
+coor.1kg <- coor.1kg %>% mutate(pop.desc = paste0(POP, " : ", `Population Description`, " (", SPOP, ")"))
 
 ## given that only a number of geolocation are possible with the google API, this 
 ## should probably stored out
