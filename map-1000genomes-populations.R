@@ -77,31 +77,15 @@ n.1kg <- left_join(n.pop, n.spop, by = c("POP" = "POP"))
 ## a workaround is to set source = "dsk" (works for a limited number of queries): 
 ## see https://stackoverflow.com/questions/36175529/getting-over-query-limit-after-one-request-with-geocode
 
-coor.1kg <- n.1kg %>% slice(1:3) %>% mutate(coor_ = purrr::map(.$location, function(x) tmaptools::geocode_OSM(x)$coords)) %>% tidyr::unnest_wider(coor_)
+coor.1kg <- n.1kg %>% mutate(coor_ = purrr::map(.$location, function(x) tmaptools::geocode_OSM(x)$coords)) %>% tidyr::unnest_wider(coor_) %>%
+  rename(lon = x, lat = y)
 
-## running into the inevitable QUERY LIMITS problems, lets use the approach from https://github.com/rladies/Map-RLadies-Growing
-coor.1kg.withloc <- coor.1kg %>% 
-  filter(!is.na(lon))
 
-while(nrow(coor.1kg.withloc) != nrow(coor.1kg))
-{
-  #   repeat this until there are no warnings() about QUERY LIMITS
-  temp <- coor.1kg %>% 
-    select(-lon, -lat) %>% 
-    anti_join(coor.1kg.withloc %>% select(-lon, -lat)) %>% 
-    mutate(longlat = purrr::map(.$location, geocode, source = "dsk")) %>% 
-    tidyr::unnest() %>% 
-    filter(!is.na(lon))
-  
-  coor.1kg.withloc <- coor.1kg.withloc %>% 
-    bind_rows(temp) %>% 
-    distinct()
-}
-
-coor.1kg <- coor.1kg.withloc
+## living in: append ", living in" string
+coor.1kg[!is.na(coor.1kg$living_in),"living_in"] <- sapply(coor.1kg[!is.na(coor.1kg$living_in),"living_in"], function(x) paste(", living in", x ))
 
 ## glue POP and `Population Description` together
-coor.1kg <- coor.1kg %>% mutate(pop.desc = paste0(POP, " : ", `Population Description`, " (", SPOP, ")"))
+coor.1kg <- coor.1kg %>% mutate(pop.desc = paste0(POP, " : ", `Population Description`, " (", SPOP, living_in, ")"))
 
 ## given that only a number of geolocation are possible with the google API, this 
 ## should probably stored out
@@ -120,7 +104,7 @@ icons <- awesomeIcons(
   icon = 'user', #people',
   iconColor = 'black',
   library = 'fa', #ion
-  markerColor = as.character(forcats::fct_recode(as.factor(n.1kg$SPOP), 
+  markerColor = as.character(forcats::fct_recode(as.factor(coor.1kg$SPOP), 
                                                  red = "EUR", blue = "AFR", 
                                                  green = "AMR", gray = "EAS", 
                                                  orange = "SAS")) 
@@ -142,7 +126,7 @@ icon.info <- awesomeIcons(
 
 ## make map
 ## ---------
-m <- leaflet(data = n.1kg) %>%
+m <- leaflet(data = coor.1kg) %>%
   addTiles() %>%  # Add default OpenStreetMap map tiles
   addAwesomeMarkers(lat=~lat, lng=~lon, label = ~htmltools::htmlEscape(pop.desc), icon = icons) %>% 
   addAwesomeMarkers(lat=-45, lng=-107, popup = glue::glue("Source: https://github.com/sinarueeger/map-1000genomes/"), icon = icon.info) %>% ## this bit has potential to be displayed as a href. 
@@ -158,6 +142,10 @@ m  # Print the map
 ##////////////////////////////////////////////////////////////////
 ##                              SAVE                            //
 ##////////////////////////////////////////////////////////////////
+
+## store out lon + lat
+## -------------------
+readr::write_tsv(coor.1kg, path = "sample_info_superpop_coord.tsv") 
 
 ## save to png
 ## ------------
