@@ -40,7 +40,7 @@ library(ggmap) ## for geocode, devtools::install_github("dkahle/ggmap")
 ##                             DATA                             //
 ##////////////////////////////////////////////////////////////////
 
-## download file first
+## download 1KG meta data first
 url <- "ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/working/20130606_sample_info/20130606_sample_info.xlsx"
 url.bitly <- "http://bit.ly/2MQTr02"
 download.file(url, "20130606_sample_info.xlsx", mode="wb")
@@ -58,7 +58,7 @@ url.spop <- "http://www.internationalgenome.org/faq/which-populations-are-part-y
 ## added location manually (!) - found this the only option to prevent overlapping locations. Also, description involves a mix of location and origin.
 
 ## rename superpopulation > SPOP
-n.spop <- readr::read_csv("sample_info_superpop.csv") %>% rename(POP = `Population Code`, SPOP = `Super Population Code`)
+n.spop <- readr::read_tsv("sample_info_superpop.tsv") %>% rename(POP = `Population Code`, SPOP = `Super Population Code`)
 
 ## join the two information
 n.1kg <- left_join(n.pop, n.spop, by = c("POP" = "POP"))
@@ -77,7 +77,7 @@ n.1kg <- left_join(n.pop, n.spop, by = c("POP" = "POP"))
 ## a workaround is to set source = "dsk" (works for a limited number of queries): 
 ## see https://stackoverflow.com/questions/36175529/getting-over-query-limit-after-one-request-with-geocode
 
-n.1kg <- n.1kg %>% mutate(purrr::map(.$location, geocode, source = "dsk")) %>% tidyr::unnest()
+n.1kg <- n.1kg %>% mutate(purrr::map(.$location, ggmap::geocode)) %>% tidyr::unnest()
 
 ## running into the inevitable QUERY LIMITS problems, lets use the approach from https://github.com/rladies/Map-RLadies-Growing
 n.1kg.withloc <- n.1kg %>% 
