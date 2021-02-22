@@ -22,5 +22,4 @@ Some deviation, see comment below.
 
 ### Reason for deviation from the original
 
-There are many populations for which the current location is the same as the ancestry (to a certain extent of course), e.g. TSI (Toscani in Italy). But others, such as ITU (Indian Telugu from the UK) are living in the UK and have a language in common (not necessarily a geographical location). 
-Hence I mapped the populations according to the current location, but coloured them according to ancestry. 
+There are many populations for which the current location is the same as the ancestry, e.g. TSI (Toscani in Italy(. But others, such as ITU (Indian Telugu from the UK) are living in the UK. E.g. CEU is difficult to pin down with a single location in Europe. 
